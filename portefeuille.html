@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Portefeuille projets — Montvert-sur-Marne</title>
+<style>
+
+@font-face{font-family:"Satoshi";src:url("ds/plurall/fonts/Satoshi-Regular.woff2") format("woff2");font-weight:400;font-style:normal}
+@font-face{font-family:"Satoshi";src:url("ds/plurall/fonts/Satoshi-Medium.woff2") format("woff2");font-weight:500;font-style:normal}
+@font-face{font-family:"Satoshi";src:url("ds/plurall/fonts/Satoshi-Bold.woff2") format("woff2");font-weight:700;font-style:normal}
+body{margin:0}
+a{color:#374ac8}a:hover{color:#2638a8}
+a:focus-visible,button:focus-visible{outline:2px solid #374ac8;outline-offset:2px}
+
+@media print { a[href^="http"]::after { content: ""; } }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<noscript><p style="padding:24px;font-family:sans-serif">Cette démonstration nécessite JavaScript.</p></noscript>
+<script src="dc-lite.js"></script>
+<script>
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { selected: 3 };
+  }
+  renderVals() {
+    const pills = {
+      'Dans les temps': 'font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: #e3ede3; color: #2f4a31; white-space: nowrap;',
+      'À surveiller': 'font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: #fbe89a; color: #5a3f00; white-space: nowrap;',
+      'En retard': 'font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: #f6e1da; color: #8a3a22; white-space: nowrap;',
+      'Terminé': 'font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: #e8ebfa; color: #1a2270; white-space: nowrap;',
+      'Validée': 'font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: #e3ede3; color: #2f4a31; white-space: nowrap;',
+      "Proposée par l'agent": 'font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: #fbe89a; color: #5a3f00; white-space: nowrap;'
+    };
+    const barColor = { 'Dans les temps': '#4e7a50', 'À surveiller': '#b0871e', 'En retard': '#c0593b', 'Terminé': '#374ac8' };
+    const projets = [
+      { id: 1, nom: 'Rénovation groupe scolaire Jean-Jaurès', axe: 'Éducation', chef: 'Nadia Haddad', elu: 'Léa Fontaine', statut: 'À surveiller', av: 35, prevu: '4,8 M€', engage: '1,45 M€', taux: '30 %', echeance: '01/09/2027' },
+      { id: 2, nom: 'Rénovation école Pasteur', axe: 'Éducation', chef: 'Nadia Haddad', elu: 'Léa Fontaine', statut: 'Dans les temps', av: 10, prevu: '3,2 M€', engage: '0,18 M€', taux: '6 %', echeance: '01/09/2028' },
+      { id: 3, nom: 'Plan vélo, tranche 1 (8 km)', axe: 'Mobilités', chef: 'Thomas Roux', elu: 'Marc Dubois', statut: 'En retard', av: 25, prevu: '2,1 M€', engage: '0,61 M€', taux: '29 %', echeance: '30/06/2027' },
+      { id: 4, nom: 'Cours oasis, 3 premières écoles', axe: 'Transition écologique', chef: 'Nadia Haddad', elu: 'Léa Fontaine', statut: 'Dans les temps', av: 60, prevu: '0,9 M€', engage: '0,52 M€', taux: '58 %', echeance: '31/08/2027' },
+      { id: 5, nom: 'Maison des solidarités Nord', axe: 'Solidarités', chef: 'Julien Garnier', elu: 'à désigner', statut: 'À surveiller', av: 5, prevu: '1,5 M€', engage: '0 M€', taux: '0 %', echeance: '31/12/2028' },
+      { id: 6, nom: 'Budget participatif 2026', axe: 'Démocratie locale', chef: 'Julien Garnier', elu: 'à désigner', statut: 'Terminé', av: 100, prevu: '1,0 M€', engage: '0,96 M€', taux: '96 %', echeance: '30/06/2026' }
+    ];
+    const decisions = {
+      1: [{ text: "Lancer la consultation travaux en novembre, sous réserve de l'avis des finances sur le surcoût amiante (280 k€)", statut: 'Validée', porteur: 'Nadia Haddad', echeance: '15/11/2026' }],
+      3: [{ text: 'Reporter la réunion publique du 22/10 au 12/11 et reprendre le tracé rue de la République avec le département', statut: "Proposée par l'agent", porteur: 'Thomas Roux', echeance: '12/11/2026' }],
+      4: [{ text: "Valider la palette d'essences et la transmettre au maître d'œuvre", statut: 'Validée', porteur: 'Nadia Haddad', echeance: '20/10/2026' }],
+      5: [{ text: 'Soumettre à la maire le choix du terrain (note comparative au bureau municipal du 3/11)', statut: "Proposée par l'agent", porteur: 'Julien Garnier', echeance: '03/11/2026' }]
+    };
+    const selId = this.state.selected;
+    const rows = projets.map((p) => ({
+      ...p,
+      avancement: p.av + ' %',
+      budget: p.engage + ' / ' + p.prevu,
+      pillStyle: pills[p.statut],
+      barStyle: 'height: 100%; width: ' + p.av + '%; background: ' + barColor[p.statut] + ';',
+      selected: p.id === selId,
+      rowStyle: p.id === selId ? 'background: #e8ebfa; border-top: 1px solid #e1e3e8;' : 'border-top: 1px solid #e1e3e8;',
+      pick: () => this.setState({ selected: p.id })
+    }));
+    const p = projets.find((x) => x.id === selId) || projets[0];
+    const ds = (decisions[p.id] || []).map((d) => ({ ...d, pillStyle: pills[d.statut] }));
+    return {
+      rows,
+      sel: { nom: p.nom, elu: p.elu, taux: p.taux, decisions: ds, hasDecisions: ds.length > 0, noDecisions: ds.length === 0 }
+    };
+  }
+}
+
+DCLite.mount(Component, [["div", {"style": "min-height: 100vh; background: #f6f6f2; color: #0f1115; font-family: Satoshi, ui-sans-serif, system-ui, sans-serif; font-size: 16px; line-height: 1.45;"}, [["header", {"style": "background: #ffffff; border-bottom: 1px solid #e1e3e8;"}, [["div", {"style": "max-width: 1200px; margin: 0 auto; padding: 16px 32px; box-sizing: border-box; display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: center; justify-content: space-between;"}, [["div", {"style": "display: flex; gap: 12px; align-items: center;"}, [["svg", {"width": "40", "height": "40", "viewBox": "0 0 40 40", "aria-hidden": "true"}, [["rect", {"x": "2", "y": "2", "width": "36", "height": "36", "rx": "8", "fill": "#374ac8"}, []], ["path", {"d": "M8 28 L16 14 L21 22 L25 16 L32 28 Z", "fill": "#ffffff"}, []], ["path", {"d": "M8 32 C14 29 20 35 32 31", "stroke": "#e2b23a", "stroke-width": "2.5", "fill": "none"}, []]]], " ", ["div", {"style": "display: flex; flex-direction: column; gap: 2px;"}, [["span", {"style": "font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #374ac8;"}, ["Pilotage du mandat"]], " ", ["span", {"style": "font-size: 18px; font-weight: 700;"}, ["Ville de Montvert-sur-Marne"]], " "]], " "]], " ", ["nav", {"aria-label": "Navigation principale", "style": "display: flex; flex-wrap: wrap; gap: 4px;"}, [["a", {"href": "index.html", "style": "padding: 12px 14px; border-radius: 8px; color: #2a2d33; font-weight: 500; text-decoration: none;"}, ["Note du lundi"]], " ", ["a", {"href": "decisions.html", "style": "padding: 12px 14px; border-radius: 8px; color: #2a2d33; font-weight: 500; text-decoration: none; display: flex; gap: 8px; align-items: center;"}, ["Décisions à valider ", ["span", {"style": "background: #fbe89a; color: #5a3f00; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px;"}, ["2"]]]], " ", ["a", {"href": "portefeuille.html", "aria-current": "page", "style": "padding: 12px 14px; border-radius: 8px; background: #e8ebfa; color: #1a2270; font-weight: 700; text-decoration: none;"}, ["Portefeuille"]], " ", ["a", {"href": "engagements.html", "style": "padding: 12px 14px; border-radius: 8px; color: #2a2d33; font-weight: 500; text-decoration: none;"}, ["Page publique"]], " "]], " ", ["div", {"style": "display: flex; gap: 16px; align-items: center; flex-wrap: wrap;"}, [["a", {"href": "https://docs.getgrist.com/oyM6d4mxcpZA8m3WdnSoVu", "style": "font-size: 14px; font-weight: 500;"}, ["Ouvrir la base Grist"]], " ", ["span", {"style": "font-size: 14px; color: #5a5e68;"}, ["Julien Garnier · Direction de projet"]], " "]], " "]], " "]], " ", ["main", {"style": "max-width: 1200px; margin: 0 auto; padding: 40px 32px 64px; box-sizing: border-box; display: flex; flex-direction: column; gap: 28px;"}, [["div", {"style": "display: flex; flex-direction: column; gap: 12px;"}, [["span", {"style": "font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #374ac8;"}, ["Plan de mandat 2026-2032"]], " ", ["h1", {"style": "margin: 0; font-size: 40px; line-height: 1.18; font-weight: 700; letter-spacing: -0.02em;"}, ["Portefeuille projets"]], " ", ["p", {"style": "margin: 0; color: #5a5e68;"}, ["Six projets rattachés à cinq engagements. Statuts et budgets viennent de la base de pilotage ; les décisions, des comptes rendus validés."]], " "]], " ", ["div", {"style": "display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;"}, [["div", {"style": "background: #ffffff; border: 1px solid #e1e3e8; border-radius: 12px; padding: 20px; display: flex; flex-direction: column;"}, [["span", {"style": "font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums;"}, ["13,5 M€"]], ["span", {"style": "font-size: 14px; color: #5a5e68;"}, ["budget prévu"]]]], " ", ["div", {"style": "background: #ffffff; border: 1px solid #e1e3e8; border-radius: 12px; padding: 20px; display: flex; flex-direction: column;"}, [["span", {"style": "font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums;"}, ["3,72 M€"]], ["span", {"style": "font-size: 14px; color: #5a5e68;"}, ["engagé, soit 28 %"]]]], " ", ["div", {"style": "background: #ffffff; border: 1px solid #e1e3e8; border-radius: 12px; padding: 20px; display: flex; flex-direction: column;"}, [["span", {"style": "font-size: 28px; font-weight: 700; color: #8a3a22; font-variant-numeric: tabular-nums;"}, ["1"]], ["span", {"style": "font-size: 14px; color: #5a5e68;"}, ["projet en retard"]]]], " ", ["div", {"style": "background: #ffffff; border: 1px solid #e1e3e8; border-radius: 12px; padding: 20px; display: flex; flex-direction: column;"}, [["span", {"style": "font-size: 28px; font-weight: 700; color: #5a3f00; font-variant-numeric: tabular-nums;"}, ["2"]], ["span", {"style": "font-size: 14px; color: #5a5e68;"}, ["projets à surveiller"]]]], " "]], " ", ["div", {"style": "background: #ffffff; border: 1px solid #e1e3e8; border-radius: 12px; overflow-x: auto;"}, [["table", {"style": "width: 100%; min-width: 900px; border-collapse: collapse; font-size: 15px;"}, [["caption", {"style": "text-align: left; padding: 16px 20px; font-size: 14px; color: #5a5e68;"}, ["Cliquez sur un projet pour voir ses décisions."]], " ", ["thead", {}, [["tr", {"style": "background: #374ac8; color: #ffffff; text-align: left;"}, [["th", {"scope": "col", "style": "padding: 12px 16px; font-weight: 500;"}, ["Projet"]], " ", ["th", {"scope": "col", "style": "padding: 12px 16px; font-weight: 500;"}, ["Engagement"]], " ", ["th", {"scope": "col", "style": "padding: 12px 16px; font-weight: 500;"}, ["Chef de projet"]], " ", ["th", {"scope": "col", "style": "padding: 12px 16px; font-weight: 500;"}, ["Statut"]], " ", ["th", {"scope": "col", "style": "padding: 12px 16px; font-weight: 500;"}, ["Avancement"]], " ", ["th", {"scope": "col", "style": "padding: 12px 16px; font-weight: 500; text-align: right;"}, ["Engagé / prévu"]], " ", ["th", {"scope": "col", "style": "padding: 12px 16px; font-weight: 500;"}, ["Échéance"]], " "]], " "]], " ", ["tbody", {}, [["sc-for", {"list": "{{rows}}", "as": "row", "hint-placeholder-count": "6"}, [["tr", {"style": "{{row.rowStyle}}"}, [["th", {"scope": "row", "style": "padding: 8px 16px; text-align: left; font-weight: 500;"}, [["button", {"type": "button", "onClick": "{{row.pick}}", "aria-pressed": "{{row.selected}}", "style": "min-height: 44px; padding: 0; border: none; background: none; font: inherit; font-weight: 700; color: #1a2270; text-align: left; cursor: pointer; text-decoration: underline; text-underline-offset: 3px;"}, ["{{row.nom}}"]]]], " ", ["td", {"style": "padding: 8px 16px; color: #2a2d33;"}, ["{{row.axe}}"]], " ", ["td", {"style": "padding: 8px 16px;"}, ["{{row.chef}}"]], " ", ["td", {"style": "padding: 8px 16px;"}, [["span", {"style": "{{row.pillStyle}}"}, ["{{row.statut}}"]]]], " ", ["td", {"style": "padding: 8px 16px;"}, [["div", {"style": "display: flex; align-items: center; gap: 10px;"}, [["div", {"style": "width: 96px; height: 8px; background: #eff1f4; border-radius: 999px; overflow: hidden;"}, [["div", {"style": "{{row.barStyle}}"}, []]]], " ", ["span", {"style": "font-variant-numeric: tabular-nums; font-size: 14px;"}, ["{{row.avancement}}"]], " "]], " "]], " ", ["td", {"style": "padding: 8px 16px; text-align: right; font-variant-numeric: tabular-nums;"}, ["{{row.budget}}"]], " ", ["td", {"style": "padding: 8px 16px; font-variant-numeric: tabular-nums;"}, ["{{row.echeance}}"]], " "]], " "]], " "]], " "]], " "]], " ", ["section", {"aria-labelledby": "h-detail", "style": "background: #ffffff; border: 3px solid #374ac8; box-shadow: 8px 8px 0 #374ac8; padding: 28px; display: flex; flex-direction: column; gap: 16px;"}, [["div", {"style": "display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: baseline; justify-content: space-between;"}, [["h2", {"id": "h-detail", "style": "margin: 0; font-size: 24px; line-height: 1.18; font-weight: 700; letter-spacing: -0.02em;"}, ["{{sel.nom}}"]], " ", ["span", {"style": "font-size: 14px; color: #5a5e68;"}, ["Élu référent : {{sel.elu}} · taux d'engagement {{sel.taux}}"]], " "]], " ", ["sc-if", {"value": "{{sel.hasDecisions}}", "hint-placeholder-val": "{{true}}"}, [["ul", {"style": "margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column;"}, [["sc-for", {"list": "{{sel.decisions}}", "as": "d", "hint-placeholder-count": "1"}, [["li", {"style": "display: flex; flex-wrap: wrap; gap: 8px 16px; justify-content: space-between; align-items: center; padding: 14px 0; border-top: 1px solid #e1e3e8;"}, [["span", {"style": "flex: 1 1 420px;"}, ["{{d.text}}"]], " ", ["span", {"style": "display: flex; gap: 12px; align-items: center; font-size: 14px;"}, [["span", {"style": "{{d.pillStyle}}"}, ["{{d.statut}}"]], ["span", {"style": "color: #5a5e68;"}, ["{{d.porteur}} · {{d.echeance}}"]]]], " "]], " "]], " "]], " "]], " ", ["sc-if", {"value": "{{sel.noDecisions}}", "hint-placeholder-val": "{{false}}"}, [["p", {"style": "margin: 0; color: #5a5e68;"}, ["Aucune décision relevée pour ce projet dans les comptes rendus traités."]], " "]], " ", ["div", {"style": "display: flex; gap: 16px; flex-wrap: wrap;"}, [["a", {"href": "decisions.html", "style": "font-size: 14px; font-weight: 500;"}, ["Voir toutes les décisions"]], " ", ["a", {"href": "https://docs.getgrist.com/oyM6d4mxcpZA8m3WdnSoVu", "style": "font-size: 14px; font-weight: 500;"}, ["Modifier dans la base Grist"]], " "]], " "]], " "]], " ", ["footer", {"style": "border-top: 1px solid #e1e3e8;"}, [["p", {"style": "max-width: 1200px; margin: 0 auto; padding: 16px 32px; box-sizing: border-box; font-size: 12px; color: #5a5e68;"}, ["Démonstrateur MAPPPS · commune et données fictives · hébergement souverain, base de pilotage Grist"]], " "]], " "]], " "], {});
+</script>
+</body>
+</html>

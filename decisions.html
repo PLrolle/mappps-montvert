@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Décisions à valider — Montvert-sur-Marne</title>
+<style>
+
+@font-face{font-family:"Satoshi";src:url("ds/plurall/fonts/Satoshi-Regular.woff2") format("woff2");font-weight:400;font-style:normal}
+@font-face{font-family:"Satoshi";src:url("ds/plurall/fonts/Satoshi-Medium.woff2") format("woff2");font-weight:500;font-style:normal}
+@font-face{font-family:"Satoshi";src:url("ds/plurall/fonts/Satoshi-Bold.woff2") format("woff2");font-weight:700;font-style:normal}
+body{margin:0}
+a{color:#374ac8}a:hover{color:#2638a8}
+a:focus-visible,button:focus-visible,textarea:focus-visible{outline:2px solid #374ac8;outline-offset:2px}
+
+@media print { a[href^="http"]::after { content: ""; } }
+</style>
+</head>
+<body>
+<div id="app"></div>
+<noscript><p style="padding:24px;font-family:sans-serif">Cette démonstration nécessite JavaScript.</p></noscript>
+<script src="dc-lite.js"></script>
+<script>
+
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { tab: 'todo', status: {}, texts: {}, drafts: {}, editing: null };
+  }
+  renderVals() {
+    const s = this.state;
+    const base = [
+      { id: 'd2', status: 'proposee', text: "Reporter la réunion publique du plan vélo du 22/10 au 12/11 et reprendre le tracé rue de la République avec le département", projet: 'Plan vélo, tranche 1', porteur: 'Thomas Roux', echeance: '12/11/2026', arbitrage: false, extrait: "La réunion publique prévue le 22/10 est reportée au 12/11. T. Roux pilote la reprise du tracé avec le département.", reunion: 'Copil plan de mandat, 13/10/2026', trace: '', notify: 'Thomas Roux' },
+      { id: 'd3', status: 'proposee', text: "Soumettre à la maire le choix du terrain de la Maison des solidarités Nord (note comparative au bureau municipal du 3/11)", projet: 'Maison des solidarités Nord', porteur: 'Julien Garnier', echeance: '03/11/2026', arbitrage: true, extrait: "Le choix relève de la maire. J. Garnier prépare une note comparative pour le bureau municipal du 3/11.", reunion: 'Copil plan de mandat, 13/10/2026', trace: '', notify: 'le cabinet de la maire' },
+      { id: 'd1', status: 'validee', text: "Lancer la consultation travaux Jean-Jaurès en novembre, sous réserve de l'avis des finances sur le surcoût amiante (280 k€)", projet: 'Groupe scolaire Jean-Jaurès', porteur: 'Nadia Haddad', echeance: '15/11/2026', arbitrage: true, extrait: "La consultation travaux est maintenue en novembre, sous réserve de l'avis des finances.", reunion: 'Copil plan de mandat, 13/10/2026', trace: 'Validée par Julien Garnier via Tchap, le 13/10.' },
+      { id: 'd4', status: 'validee', text: "Valider la palette d'essences des cours oasis et la transmettre au maître d'œuvre", projet: 'Cours oasis, 3 premières écoles', porteur: 'Nadia Haddad', echeance: '20/10/2026', arbitrage: false, extrait: "Le comité valide la palette d'essences proposée par le service espaces verts.", reunion: 'Copil plan de mandat, 06/10/2026', trace: 'Validée par Julien Garnier via le portail, le 06/10.' }
+    ];
+    const labels = { proposee: "Proposée par l'agent", validee: 'Validée', corrigee: 'Corrigée et validée', rejetee: 'Rejetée' };
+    const pills = {
+      proposee: 'font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: #fbe89a; color: #5a3f00;',
+      validee: 'font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: #e3ede3; color: #2f4a31;',
+      corrigee: 'font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: #e3ede3; color: #2f4a31;',
+      rejetee: 'font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: #f6e1da; color: #8a3a22;'
+    };
+    const setStatus = (id, st, extra) => this.setState({ status: { ...s.status, [id]: st }, editing: null, ...(extra || {}) });
+    const all = base.map((d) => {
+      const st = s.status[d.id] || d.status;
+      const text = s.texts[d.id] || d.text;
+      let trace = d.trace;
+      if (s.status[d.id] === 'validee') trace = 'Validée par vous via le portail, à l’instant. ' + d.notify + ' est notifié dans Tchap.';
+      if (s.status[d.id] === 'corrigee') trace = 'Corrigée et validée par vous via le portail, à l’instant. La version initiale reste dans l’historique.';
+      if (s.status[d.id] === 'rejetee') trace = 'Rejetée par vous, à l’instant. Elle reste visible dans l’historique du compte rendu.';
+      const isEditing = s.editing === d.id;
+      return {
+        ...d, text, statusLabel: labels[st], pillStyle: pills[st],
+        isPending: st === 'proposee', isEditing,
+        showActions: st === 'proposee' && !isEditing,
+        hasTrace: !!trace, trace,
+        fieldId: 'corr-' + d.id,
+        draft: s.drafts[d.id] != null ? s.drafts[d.id] : text,
+        onDraft: (e) => this.setState({ drafts: { ...s.drafts, [d.id]: e.target.value } }),
+        validate: () => setStatus(d.id, 'validee'),
+        reject: () => setStatus(d.id, 'rejetee'),
+        edit: () => this.setState({ editing: d.id }),
+        cancel: () => this.setState({ editing: null }),
+        save: () => setStatus(d.id, 'corrigee', { texts: { ...s.texts, [d.id]: s.drafts[d.id] != null ? s.drafts[d.id] : text } })
+      };
+    });
+    const pending = all.filter((d) => d.isPending);
+    const done = all.filter((d) => !d.isPending);
+    const items = s.tab === 'todo' ? pending : done;
+    const on = 'min-height: 44px; padding: 10px 16px; border: 1px solid #374ac8; border-radius: 999px; background: #374ac8; color: #ffffff; font: inherit; font-weight: 700; cursor: pointer;';
+    const off = 'min-height: 44px; padding: 10px 16px; border: 1px solid #e1e3e8; border-radius: 999px; background: #ffffff; color: #2a2d33; font: inherit; font-weight: 500; cursor: pointer;';
+    return {
+      items,
+      isEmpty: items.length === 0,
+      pendingCount: pending.length,
+      doneCount: done.length,
+      tabTodo: s.tab === 'todo',
+      tabDone: s.tab === 'done',
+      todoStyle: s.tab === 'todo' ? on : off,
+      doneStyle: s.tab === 'done' ? on : off,
+      showTodo: () => this.setState({ tab: 'todo' }),
+      showDone: () => this.setState({ tab: 'done' })
+    };
+  }
+}
+
+DCLite.mount(Component, [["div", {"style": "min-height: 100vh; background: #f6f6f2; color: #0f1115; font-family: Satoshi, ui-sans-serif, system-ui, sans-serif; font-size: 16px; line-height: 1.45;"}, [["header", {"style": "background: #ffffff; border-bottom: 1px solid #e1e3e8;"}, [["div", {"style": "max-width: 1200px; margin: 0 auto; padding: 16px 32px; box-sizing: border-box; display: flex; flex-wrap: wrap; gap: 16px 32px; align-items: center; justify-content: space-between;"}, [["div", {"style": "display: flex; gap: 12px; align-items: center;"}, [["svg", {"width": "40", "height": "40", "viewBox": "0 0 40 40", "aria-hidden": "true"}, [["rect", {"x": "2", "y": "2", "width": "36", "height": "36", "rx": "8", "fill": "#374ac8"}, []], ["path", {"d": "M8 28 L16 14 L21 22 L25 16 L32 28 Z", "fill": "#ffffff"}, []], ["path", {"d": "M8 32 C14 29 20 35 32 31", "stroke": "#e2b23a", "stroke-width": "2.5", "fill": "none"}, []]]], " ", ["div", {"style": "display: flex; flex-direction: column; gap: 2px;"}, [["span", {"style": "font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #374ac8;"}, ["Pilotage du mandat"]], " ", ["span", {"style": "font-size: 18px; font-weight: 700;"}, ["Ville de Montvert-sur-Marne"]], " "]], " "]], " ", ["nav", {"aria-label": "Navigation principale", "style": "display: flex; flex-wrap: wrap; gap: 4px;"}, [["a", {"href": "index.html", "style": "padding: 12px 14px; border-radius: 8px; color: #2a2d33; font-weight: 500; text-decoration: none;"}, ["Note du lundi"]], " ", ["a", {"href": "decisions.html", "aria-current": "page", "style": "padding: 12px 14px; border-radius: 8px; background: #e8ebfa; color: #1a2270; font-weight: 700; text-decoration: none; display: flex; gap: 8px; align-items: center;"}, ["Décisions à valider ", ["span", {"style": "background: #fbe89a; color: #5a3f00; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px;"}, ["{{pendingCount}}"]]]], " ", ["a", {"href": "portefeuille.html", "style": "padding: 12px 14px; border-radius: 8px; color: #2a2d33; font-weight: 500; text-decoration: none;"}, ["Portefeuille"]], " ", ["a", {"href": "engagements.html", "style": "padding: 12px 14px; border-radius: 8px; color: #2a2d33; font-weight: 500; text-decoration: none;"}, ["Page publique"]], " "]], " ", ["div", {"style": "display: flex; gap: 16px; align-items: center; flex-wrap: wrap;"}, [["a", {"href": "https://docs.getgrist.com/oyM6d4mxcpZA8m3WdnSoVu", "style": "font-size: 14px; font-weight: 500;"}, ["Ouvrir la base Grist"]], " ", ["span", {"style": "font-size: 14px; color: #2a2d33;"}, ["Connecté : ", ["strong", {}, ["Julien Garnier"]], ", directeur de projet"]], " "]], " "]], " "]], " ", ["main", {"style": "max-width: 1200px; margin: 0 auto; padding: 40px 32px 64px; box-sizing: border-box; display: flex; flex-wrap: wrap; gap: 32px; align-items: flex-start;"}, [["section", {"style": "flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 24px;"}, [["div", {"style": "display: flex; flex-direction: column; gap: 12px;"}, [["span", {"style": "font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #374ac8;"}, ["Espace direction de projet · Julien Garnier"]], " ", ["h1", {"style": "margin: 0; font-size: 40px; line-height: 1.18; font-weight: 700; letter-spacing: -0.02em;"}, ["Décisions à valider par la direction de projet"]], " ", ["p", {"style": "margin: 0; color: #5a5e68;"}, ["Décisions relevées dans les comptes rendus des copils des 6 et 13 octobre. Validez-les, corrigez-les ou rejetez-les : seules les décisions validées alimentent la note à Mme la Maire et le suivi des projets."]], " "]], " ", ["div", {"role": "group", "aria-label": "Filtrer les décisions", "style": "display: flex; gap: 8px; flex-wrap: wrap;"}, [["button", {"type": "button", "onClick": "{{showTodo}}", "aria-pressed": "{{tabTodo}}", "style": "{{todoStyle}}"}, ["À valider ({{pendingCount}})"]], " ", ["button", {"type": "button", "onClick": "{{showDone}}", "aria-pressed": "{{tabDone}}", "style": "{{doneStyle}}"}, ["Traitées ({{doneCount}})"]], " "]], " ", ["sc-if", {"value": "{{isEmpty}}", "hint-placeholder-val": "{{false}}"}, [["div", {"style": "background: #ffffff; border: 1px solid #e1e3e8; border-radius: 12px; padding: 32px;"}, [["p", {"style": "margin: 0; font-weight: 700;"}, ["Rien à valider pour l'instant."]], " ", ["p", {"style": "margin: 8px 0 0; color: #5a5e68;"}, ["Les décisions validées alimentent la note du lundi, le portefeuille et, quand elles concernent un engagement, la page publique."]], " "]], " "]], " ", ["sc-for", {"list": "{{items}}", "as": "item", "hint-placeholder-count": "2"}, [["article", {"style": "background: #ffffff; border: 1px solid #e1e3e8; border-radius: 12px; padding: 28px; display: flex; flex-direction: column; gap: 16px;"}, [["div", {"style": "display: flex; flex-wrap: wrap; gap: 8px; align-items: center;"}, [["span", {"style": "{{item.pillStyle}}"}, ["{{item.statusLabel}}"]], " ", ["sc-if", {"value": "{{item.arbitrage}}", "hint-placeholder-val": "{{false}}"}, [["span", {"style": "font-size: 13px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: #e8ebfa; color: #1a2270;"}, ["Remonte à l'exécutif"]], " "]], " "]], " ", ["h2", {"style": "margin: 0; font-size: 20px; line-height: 1.3; font-weight: 700;"}, ["{{item.text}}"]], " ", ["dl", {"style": "margin: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; font-size: 14px;"}, [["div", {}, [["dt", {"style": "color: #5a5e68;"}, ["Projet"]], ["dd", {"style": "margin: 0; font-weight: 500;"}, ["{{item.projet}}"]]]], " ", ["div", {}, [["dt", {"style": "color: #5a5e68;"}, ["Porteur"]], ["dd", {"style": "margin: 0; font-weight: 500;"}, ["{{item.porteur}}"]]]], " ", ["div", {}, [["dt", {"style": "color: #5a5e68;"}, ["Échéance"]], ["dd", {"style": "margin: 0; font-weight: 500;"}, ["{{item.echeance}}"]]]], " "]], " ", ["figure", {"style": "margin: 0; padding: 16px 20px; background: #f3f1ea; border-radius: 4px; display: flex; flex-direction: column; gap: 6px;"}, [["blockquote", {"style": "margin: 0; font-size: 15px; color: #2a2d33;"}, ["« {{item.extrait}} »"]], " ", ["figcaption", {"style": "font-size: 13px; color: #5a5e68;"}, ["Extrait du compte rendu · {{item.reunion}}"]], " "]], " ", ["sc-if", {"value": "{{item.isEditing}}", "hint-placeholder-val": "{{false}}"}, [["div", {"style": "display: flex; flex-direction: column; gap: 8px;"}, [["label", {"for": "{{item.fieldId}}", "style": "font-size: 14px; font-weight: 700;"}, ["Corriger la décision"]], " ", ["textarea", {"id": "{{item.fieldId}}", "value": "{{item.draft}}", "onChange": "{{item.onDraft}}", "rows": "3", "style": "font: inherit; padding: 12px; border: 1px solid #9098a4; border-radius: 8px; resize: vertical;"}, []], " ", ["div", {"style": "display: flex; gap: 8px; flex-wrap: wrap;"}, [["button", {"type": "button", "onClick": "{{item.save}}", "style": "min-height: 44px; padding: 10px 18px; border: none; border-radius: 8px; background: #374ac8; color: #ffffff; font: inherit; font-weight: 700; cursor: pointer;"}, ["Enregistrer et valider"]], " ", ["button", {"type": "button", "onClick": "{{item.cancel}}", "style": "min-height: 44px; padding: 10px 18px; border: 1px solid #e1e3e8; border-radius: 8px; background: #ffffff; color: #2a2d33; font: inherit; font-weight: 500; cursor: pointer;"}, ["Annuler"]], " "]], " "]], " "]], " ", ["sc-if", {"value": "{{item.showActions}}", "hint-placeholder-val": "{{true}}"}, [["div", {"style": "display: flex; gap: 8px; flex-wrap: wrap;"}, [["button", {"type": "button", "onClick": "{{item.validate}}", "style": "min-height: 44px; padding: 10px 18px; border: none; border-radius: 8px; background: #374ac8; color: #ffffff; font: inherit; font-weight: 700; cursor: pointer;"}, ["Valider"]], " ", ["button", {"type": "button", "onClick": "{{item.edit}}", "style": "min-height: 44px; padding: 10px 18px; border: 1px solid #374ac8; border-radius: 8px; background: #ffffff; color: #374ac8; font: inherit; font-weight: 500; cursor: pointer;"}, ["Corriger"]], " ", ["button", {"type": "button", "onClick": "{{item.reject}}", "style": "min-height: 44px; padding: 10px 18px; border: 1px solid #e1e3e8; border-radius: 8px; background: #ffffff; color: #8a3a22; font: inherit; font-weight: 500; cursor: pointer;"}, ["Rejeter"]], " "]], " "]], " ", ["sc-if", {"value": "{{item.hasTrace}}", "hint-placeholder-val": "{{false}}"}, [["p", {"style": "margin: 0; font-size: 14px; color: #5a5e68;"}, ["{{item.trace}}"]], " "]], " "]], " "]], " "]], " ", ["aside", {"aria-label": "Valider depuis la messagerie", "style": "flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 16px;"}, [["div", {"style": "background: #ffffff; border: 1px solid #e1e3e8; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 16px;"}, [["h2", {"style": "margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #374ac8;"}, ["La même chose dans Tchap"]], " ", ["p", {"style": "margin: 0; font-size: 14px; color: #5a5e68;"}, ["Le porteur reçoit la décision là où il travaille déjà. Il valide d'un clic, sans ouvrir le portail."]], " ", ["div", {"style": "border: 1px solid #e1e3e8; border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 10px; background: #f6f6f2;"}, [["div", {"style": "display: flex; gap: 10px; align-items: center;"}, [["span", {"aria-hidden": "true", "style": "width: 32px; height: 32px; border-radius: 999px; background: #374ac8; color: #ffffff; font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center;"}, ["A"]], " ", ["span", {"style": "font-size: 14px; font-weight: 700;"}, ["Agent de pilotage"]], " ", ["span", {"style": "font-size: 12px; color: #5a5e68;"}, ["13/10, 18:42"]], " "]], " ", ["p", {"style": "margin: 0; font-size: 14px;"}, ["Bonjour Thomas, le copil du 13/10 vous attribue une décision :"]], " ", ["p", {"style": "margin: 0; font-size: 14px; font-weight: 500;"}, ["Reporter la réunion publique du plan vélo au 12/11 et reprendre le tracé rue de la République avec le département. Échéance : 12/11."]], " ", ["div", {"style": "display: flex; gap: 8px; flex-wrap: wrap;"}, [["span", {"style": "font-size: 13px; font-weight: 700; padding: 6px 12px; border-radius: 8px; background: #374ac8; color: #ffffff;"}, ["Valider"]], " ", ["span", {"style": "font-size: 13px; font-weight: 500; padding: 6px 12px; border-radius: 8px; border: 1px solid #374ac8; color: #374ac8;"}, ["Corriger"]], " ", ["span", {"style": "font-size: 13px; font-weight: 500; padding: 6px 12px; border-radius: 8px; border: 1px solid #e1e3e8; color: #2a2d33;"}, ["Voir l'extrait"]], " "]], " "]], " "]], " ", ["div", {"style": "background: #ffffff; border: 1px solid #e1e3e8; border-radius: 12px; padding: 24px; display: flex; flex-direction: column; gap: 10px;"}, [["h2", {"style": "margin: 0; font-size: 13px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: #374ac8;"}, ["Comptes rendus traités"]], " ", ["ul", {"style": "margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 10px; font-size: 14px;"}, [["li", {}, ["Copil plan de mandat, 13/10 ", ["span", {"style": "color: #5a5e68;"}, ["· 3 décisions trouvées"]]]], " ", ["li", {}, ["Copil plan de mandat, 06/10 ", ["span", {"style": "color: #5a5e68;"}, ["· 1 décision trouvée"]]]], " "]], " "]], " "]], " "]], " ", ["footer", {"style": "border-top: 1px solid #e1e3e8;"}, [["p", {"style": "max-width: 1200px; margin: 0 auto; padding: 16px 32px; box-sizing: border-box; font-size: 12px; color: #5a5e68;"}, ["Démonstrateur MAPPPS · commune et données fictives · hébergement souverain, base de pilotage Grist"]], " "]], " "]], " "], {});
+</script>
+</body>
+</html>
